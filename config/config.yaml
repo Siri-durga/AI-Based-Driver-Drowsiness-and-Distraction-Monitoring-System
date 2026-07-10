@@ -1,0 +1,154 @@
+# Sürücü Uykululuk Tespiti Sistem Konfigürasyonu
+# Hem sistem konfigürasyonu hem UI konfigürasyonu bu dosyada birleştirilmiştir
+
+# Kamera parametreleri
+camera:
+  width: 640
+  height: 480
+  fps: 30
+  device_id: 2
+  # ETH-XGaze için kamera kalibrasyonu parametreleri
+  # Bunlar varsayılan değerlerdir, kameranıza göre değiştirilmelidir
+  matrix: [1000.0, 0.0, 320.0, 0.0, 1000.0, 240.0, 0.0, 0.0, 1.0]  # 3x3 kamera matrisi düzleştirilmiş halde
+  distortion: [0.0, 0.0, 0.0, 0.0, 0.0]  # 5 parametreli distorsiyon katsayıları
+
+# Algılama parametreleri
+detection:
+  # EAR (Eye Aspect Ratio) parametreleri
+  ear_threshold: 0.21   # Gözlerin kapalı sayılması için EAR eşiği
+  
+  # MAR (Mouth Aspect Ratio) parametreleri
+  mar_threshold: 0.65   # Ağzın açık sayılması için MAR eşiği
+  
+  # PERCLOS parametreleri
+  perclos:
+    window_size: 150               # PERCLOS hesaplaması için çerçeve sayısı (30 fps için 5 saniye)
+    threshold: 15.0                # Uykululuk uyarısı için PERCLOS yüzdesi eşiği
+    warning_threshold: 15.0        # Uyarı seviyesi eşiği
+    critical_threshold: 20.0       # Kritik seviye eşiği
+  
+  # Bakış yönü parametreleri
+  gaze:
+    deviation_threshold: 20.0      # Bakış sapma eşiği (derece)
+    use_eth_xgaze: true            # ETH-XGaze modelini kullan
+    normalize_face: true           # Yüz normalizasyonunu etkinleştir
+    frame_skip: 3                  # Kaç karede bir bakış yönü tespiti yapılacağı (performans optimizasyonu)
+
+# Uykululuk değerlendirme parametreleri
+drowsiness:
+  ear_closed_duration: 2.0         # Gözlerin kapalı kalma süresi eşiği (saniye)
+  mar_open_duration: 1.0           # Ağzın açık kalma süresi eşiği (saniye)
+  min_perclos_for_drowsy: 12.0     # Uykululuk için minimum PERCLOS değeri
+  history_duration: 5.0            # Geçmiş verileri saklama süresi (saniye)
+
+# Bakış izleme parametreleri (EU regülasyonu C(2023)4523 için)
+gaze_monitoring:
+  thresholds:
+    # Alan 1 (infotainment gibi sürüşle ilgili olmayan alanlar) bakış süresi eşikleri
+    area1:
+      warning: 2.0       # saniye (2s üzerinde uyarı)
+      critical: 3.0      # saniye (3s üzerinde kritik)
+    
+    # Yol merkezine bakmama süresi eşikleri
+    road_center_absence:
+      warning: 3.0       # saniye (3s üzerinde uyarı)
+      critical: 4.0      # saniye (4s üzerinde kritik)
+    
+    # Diğer Alan 2 bölgeleri için bakış süresi eşikleri (Road Center hariç)
+    area2:
+      warning: 2.0       # saniye (2s üzerinde uyarı)
+      critical: 3.0      # saniye (3s üzerinde kritik)
+    
+    # Alan 1'de geçirilen toplam süre yüzdesi eşikleri
+    area1_percentage:
+      warning: 15.0      # yüzde (%15 üzerinde uyarı)
+      critical: 20.0     # yüzde (%20 üzerinde kritik)
+  
+  # İzleme penceresi süresi (son N saniyeyi analiz etmek için)
+  time_window: 60.0      # saniye
+
+# Günlükleme parametreleri
+logging:
+  console_level: "info"            # Konsol günlük seviyesi (debug, info, warning, error)
+  file_level: "debug"              # Dosya günlük seviyesi
+  enable_console: true             # Konsol günlüklemesini etkinleştir
+  enable_file: true                # Dosya günlüklemesini etkinleştir
+
+# Görselleştirme parametreleri
+visualization:
+  show_fps: true                   # FPS göstergesini göster
+  show_metrics: true               # Ölçümleri göster
+  show_landmarks: false            # Yüz işaretlerini göster
+  show_gaze: true                  # Bakış yönünü göster
+
+# Kullanıcı arayüzü (UI) parametreleri
+ui:
+  window:
+    title: "Sürücü Uykululuk Tespit Sistemi"
+    width: 1400
+    height: 900
+    min_width: 1000
+    min_height: 700
+    start_maximized: true          # Uygulama tam ekran başlatılsın mı?
+  
+  video_frame:
+    width: 800
+    height: 600
+  
+  indicators:
+    label_width: 120
+    progress_bar_height: 20
+    ear:
+      min: 0.0
+      max: 1.0
+      warning_threshold: 0.25
+      critical_threshold: 0.21
+      normal_color: "#34c759"      # Apple green
+    mar:
+      min: 0.0
+      max: 1.0
+      warning_threshold: 0.7
+      critical_threshold: 0.8
+      normal_color: "#34c759"      # Apple green
+    perclos:
+      min: 0.0
+      max: 100.0
+      warning_threshold: 15.0
+      critical_threshold: 20.0
+      normal_color: "#34c759"      # Apple green
+  
+  # Panel başlıkları için görünüm ayarları
+  panel_headers:
+    background_color: "#f0f0f0"
+    text_color: "#333333"
+    font_size: 14
+    font_weight: "bold"
+    border_color: "#e1e1e1"
+    padding: 5
+  
+  chart:
+    update_interval: 100           # ms cinsinden grafik güncelleme aralığı
+    history_duration: 30           # Grafik geçmiş süresi (saniye)
+    y_range_ear: [0.0, 1.0]        # EAR değerleri için Y ekseni aralığı
+    y_range_mar: [0.0, 1.0]        # MAR değerleri için Y ekseni aralığı
+    y_range_perclos: [0.0, 100.0]  # PERCLOS değerleri için Y ekseni aralığı
+    line_width: 2
+  
+  controls:
+    button_width: 120
+    button_height: 40
+    button_margin: 10
+    font_size: 12
+  
+  fonts:
+    family: "Arial"
+    title_size: 14
+    label_size: 12
+    value_size: 16
+    status_size: 10
+  
+  layout:
+    margin: 10
+    spacing: 10
+    padding: 5
+    dock_width: 400                # Metrikler için genişlik
